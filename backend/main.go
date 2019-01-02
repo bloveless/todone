@@ -29,4 +29,5 @@ func main() {
 	pingController.RegisterRoutes(r)
 
 	r.Run(":9090")
+	// r.RunTLS(":4443", "keys/server.crt", "keys/server.key")
 }
