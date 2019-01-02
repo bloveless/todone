@@ -8,7 +8,6 @@ const styles = (theme: Theme) => createStyles({
     root: {
         width: '100%',
         margin: 'auto',
-        backgroundColor: theme.palette.background.paper,
     },
 });
 

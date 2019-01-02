@@ -1,15 +1,27 @@
 import * as React from 'react';
+import { createStyles, withStyles, WithStyles, Theme } from '@material-ui/core/styles';
 import TopBar from '../components/TopBar';
 import ToDoList from '../components/ToDoList';
 import BottomBar from '../components/BottomBar';
 import Grid from '@material-ui/core/Grid';
 
-class Home extends React.Component<{}, {}> {
+const styles = (theme: Theme) => createStyles({
+    root: {
+        width: '100%',
+        margin: 'auto',
+        backgroundColor: theme.palette.background.paper,
+    },
+});
+
+interface HomeProps extends WithStyles<typeof styles> {};
+
+class Home extends React.Component<HomeProps, {}> {
     render() {
+        const { classes } = this.props;
+
         return (
-            <React.Fragment>
+            <div className={classes.root}>
                 <TopBar />
-                <div style={{ backgroundColor: 'white' }}>
                     <Grid
                         container
                         direction="row"
@@ -20,11 +32,10 @@ class Home extends React.Component<{}, {}> {
                             <ToDoList />
                         </Grid>
                     </Grid>
-                </div>
                 <BottomBar />
-            </React.Fragment>
+            </div>
         );
     }
 }
 
-export default Home;
+export default withStyles(styles)(Home);
