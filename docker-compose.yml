@@ -10,6 +10,15 @@ services:
       - frontend_node_modules:/home/node/app/node_modules
     ports:
       - 8080:8080
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ./docker/golang/Dockerfile
+    command: ["reflex", "-c", "reflex.conf"]
+    volumes:
+      - ./backend:/go/app:cached
+    ports:
+      - 9090:9090
 
 volumes:
   frontend_node_modules:

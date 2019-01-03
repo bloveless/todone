@@ -22,11 +22,14 @@ func main() {
 	// Add the cors headers if there is an Origin header.
 	r.Use(middleware.CORSMiddleware())
 
+	healthController := new(controllers.HealthController)
+	healthController.RegisterRoutes(r)
+
 	homeController := new(controllers.HomeController)
 	homeController.RegisterRoutes(r)
 
-	pingController := new(controllers.PingController)
-	pingController.RegisterRoutes(r)
+	toDoController := new(controllers.ToDoController)
+	toDoController.RegisterRoutes(r)
 
 	r.Run(":9090")
 	// r.RunTLS(":4443", "keys/server.crt", "keys/server.key")
