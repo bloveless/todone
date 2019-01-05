@@ -1,8 +1,9 @@
 import * as React from 'react';
+import axios from 'axios';
 import { createStyles, withStyles, WithStyles, Theme } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import ToDoListItem from './ToDoListItem';
+import * as config from '../config.json';
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -15,59 +16,77 @@ export interface ToDo {
     id: string;
     text: string;
     complete: boolean;
-};
+}
 interface ToDoListProps extends WithStyles<typeof styles> { };
 interface ToDoListState {
-    todos: ToDo[];
+    toDos: ToDo[];
     activeId: string;
-};
+}
 
 class ToDoList extends React.Component<ToDoListProps, ToDoListState> {
-    state = {
-        todos: [{
-            id: '41ed2588-3c7e-4ecc-809e-23ddd5b017e0',
-            text: 'First ToDo',
-            complete: true,
-        }, {
-            id: 'f0903fa1-bf65-4513-82f8-62157b42d016',
-            text: 'Second ToDo',
-            complete: false,
-        }],
+    state: ToDoListState = {
+        toDos: [],
         activeId: '',
     };
 
-    handleToggleComplete = (todoId: string) => () => {
-        const { todos } = this.state;
-        todos.forEach((currentTodo) => {
-            if (currentTodo.id === todoId) {
-                currentTodo.complete = !currentTodo.complete;
-            }
-        });
+    constructor(props: ToDoListProps) {
+        super(props);
 
-        this.setState({
-            todos
-        });
-    };
+        this.handleToggleActive = this.handleToggleActive.bind(this);
+        this.handleToggleComplete = this.handleToggleComplete.bind(this);
+    }
 
-    handleToggleActive = (todoId: string) => () => {
-        const { activeId } = this.state;
+    handleToggleComplete(toDoId: string): () => void {
+        return () => {
+            const newToDos: ToDo[] = [];
+            let newActiveId = this.state.activeId;
+            axios.post(`${config.apiEndpoint}/to-do/${toDoId}/toggle-complete`)
+                .then((response) => {
+                    console.log('response', response.data);
+                    response.data.forEach((toDo: ToDo) => {
+                        newToDos.push(toDo as ToDo);
+                    });
 
-        this.setState({
-            activeId: (todoId !== activeId) ? todoId : '',
+                    this.setState({
+                        toDos: newToDos,
+                        activeId: newActiveId,
+                    });
+                });
+        };
+    }
+
+    handleToggleActive(toDoId: string): () => void {
+        return () => {
+            const { activeId } = this.state;
+
+            this.setState({
+                activeId: (toDoId !== activeId) ? toDoId : '',
+            });
+        }
+    }
+
+    componentDidMount() {
+        axios.get(`${config.apiEndpoint}/to-do`).then((response) => {
+            const newToDos: ToDo[] = [];
+            response.data.forEach((toDo: ToDo) => {
+                newToDos.push(toDo as ToDo);
+            });
+            this.setState({ toDos: newToDos });
+            console.log(response.data);
         });
     }
 
     render() {
         const { classes } = this.props;
-        const { todos, activeId } = this.state;
+        const { toDos, activeId } = this.state;
 
         return (
             <List className={classes.root}>
-                {todos.map((todo) => (
+                {toDos.map((toDo) => (
                     <ToDoListItem
-                        key={todo.id}
-                        todo={todo}
-                        active={activeId === todo.id}
+                        key={toDo.id}
+                        toDo={toDo}
+                        active={activeId === toDo.id}
                         handleToggleComplete={this.handleToggleComplete}
                         handleToggleActive={this.handleToggleActive}
                     />

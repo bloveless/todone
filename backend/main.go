@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"todone-backend/controllers"
 	"todone-backend/middleware"
 
@@ -31,6 +32,9 @@ func main() {
 	toDoController := new(controllers.ToDoController)
 	toDoController.RegisterRoutes(r)
 
-	r.Run(":9090")
-	// r.RunTLS(":4443", "keys/server.crt", "keys/server.key")
+	err := r.Run(":9090")
+	// err := r.RunTLS(":4443", "keys/server.crt", "keys/server.key")
+	if err != nil {
+		fmt.Println(err)
+	}
 }

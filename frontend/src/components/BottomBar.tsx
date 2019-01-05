@@ -2,8 +2,8 @@ import * as React from 'react';
 import { WithStyles, createStyles, withStyles } from '@material-ui/core/styles';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
-import LensIcon from '@material-ui/icons/LensOutlined';
-import CheckCircleIcon from '@material-ui/icons/CheckCircleOutlined';
+import CheckBox from '@material-ui/icons/CheckBox';
+import CheckBoxOutlineBlank from '@material-ui/icons/CheckBoxOutlineBlank';
 
 const styles = createStyles({
     root: {
@@ -35,8 +35,8 @@ class BottomBar extends React.Component<BottomBarProps, BottomBarState> {
                 showLabels
                 className={classes.root}
             >
-                <BottomNavigationAction label="Incomplete" icon={<LensIcon />} />
-                <BottomNavigationAction label="Complete" icon={<CheckCircleIcon />} />
+                <BottomNavigationAction label="Incomplete" icon={<CheckBoxOutlineBlank />} />
+                <BottomNavigationAction label="Complete" icon={<CheckBox />} />
             </BottomNavigation>
         );
     }
