@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -97,6 +98,7 @@ module.exports = {
 
     plugins: [
         new CleanWebpackPlugin(path.resolve(__dirname, 'dist')),
+        new webpack.EnvironmentPlugin(['NODE_ENV']),
         new HtmlWebpackPlugin({
             favicon: 'static/favicon.ico',
             template: 'src/index.html',

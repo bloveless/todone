@@ -3,7 +3,7 @@ import axios from 'axios';
 import { createStyles, withStyles, WithStyles, Theme } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ToDoListItem from './ToDoListItem';
-import * as config from '../config.json';
+import config from '../config';
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -16,17 +16,19 @@ export interface ToDo {
     id: string;
     text: string;
     complete: boolean;
+    active: boolean;
 }
-interface ToDoListProps extends WithStyles<typeof styles> { };
+
+interface ToDoListProps extends WithStyles<typeof styles> {
+}
+
 interface ToDoListState {
     toDos: ToDo[];
-    activeId: string;
 }
 
 class ToDoList extends React.Component<ToDoListProps, ToDoListState> {
     state: ToDoListState = {
         toDos: [],
-        activeId: '',
     };
 
     constructor(props: ToDoListProps) {
@@ -39,17 +41,14 @@ class ToDoList extends React.Component<ToDoListProps, ToDoListState> {
     handleToggleComplete(toDoId: string): () => void {
         return () => {
             const newToDos: ToDo[] = [];
-            let newActiveId = this.state.activeId;
             axios.post(`${config.apiEndpoint}/to-do/${toDoId}/toggle-complete`)
                 .then((response) => {
-                    console.log('response', response.data);
                     response.data.forEach((toDo: ToDo) => {
                         newToDos.push(toDo as ToDo);
                     });
 
                     this.setState({
                         toDos: newToDos,
-                        activeId: newActiveId,
                     });
                 });
         };
@@ -57,28 +56,34 @@ class ToDoList extends React.Component<ToDoListProps, ToDoListState> {
 
     handleToggleActive(toDoId: string): () => void {
         return () => {
-            const { activeId } = this.state;
+            const newToDos: ToDo[] = [];
+            axios.post(`${config.apiEndpoint}/to-do/${toDoId}/toggle-active`)
+                .then((response) => {
+                    response.data.forEach((toDo: ToDo) => {
+                        newToDos.push(toDo as ToDo);
+                    });
 
-            this.setState({
-                activeId: (toDoId !== activeId) ? toDoId : '',
-            });
+                    this.setState({
+                        toDos: newToDos,
+                    });
+                });
         }
     }
 
     componentDidMount() {
-        axios.get(`${config.apiEndpoint}/to-do`).then((response) => {
-            const newToDos: ToDo[] = [];
-            response.data.forEach((toDo: ToDo) => {
-                newToDos.push(toDo as ToDo);
+        axios.get(`${config.apiEndpoint}/to-do`)
+            .then((response) => {
+                const newToDos: ToDo[] = [];
+                response.data.forEach((toDo: ToDo) => {
+                    newToDos.push(toDo as ToDo);
+                });
+                this.setState({ toDos: newToDos });
             });
-            this.setState({ toDos: newToDos });
-            console.log(response.data);
-        });
     }
 
     render() {
         const { classes } = this.props;
-        const { toDos, activeId } = this.state;
+        const { toDos } = this.state;
 
         return (
             <List className={classes.root}>
@@ -86,7 +91,6 @@ class ToDoList extends React.Component<ToDoListProps, ToDoListState> {
                     <ToDoListItem
                         key={toDo.id}
                         toDo={toDo}
-                        active={activeId === toDo.id}
                         handleToggleComplete={this.handleToggleComplete}
                         handleToggleActive={this.handleToggleActive}
                     />

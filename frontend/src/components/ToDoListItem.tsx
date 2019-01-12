@@ -10,10 +10,9 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 
 interface ToDoListItemProps {
     toDo: ToDo;
-    active: boolean;
     handleToggleComplete(toDoId: string): () => void;
     handleToggleActive(toDoId: string): () => void;
-};
+}
 
 interface ToDoListItemState {
     subMenuVisible: boolean;
@@ -25,7 +24,7 @@ class ToDoListItem extends React.Component<ToDoListItemProps, ToDoListItemState>
     };
 
     render() {
-        const { toDo, active, handleToggleComplete, handleToggleActive } = this.props;
+        const { toDo, handleToggleComplete, handleToggleActive } = this.props;
         const { subMenuVisible } = this.state;
 
         return (
@@ -42,7 +41,7 @@ class ToDoListItem extends React.Component<ToDoListItemProps, ToDoListItemState>
                     <Tooltip title="Toggle currently active" enterDelay={1000}>
                         <Switch
                             onChange={handleToggleActive(toDo.id)}
-                            checked={active && !toDo.complete}
+                            checked={toDo.active && !toDo.complete}
                             disabled={toDo.complete}
                         />
                     </Tooltip>
