@@ -2,39 +2,67 @@ package main
 
 import (
 	"fmt"
-	"todone-backend/controllers"
-	"todone-backend/middleware"
-
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
+	"net/http"
+	"time"
+	"todone-backend/webapp"
+	"todone-backend/webapp/storage"
 )
 
 func main() {
-	// Creates a router without any middleware by default
-	r := gin.New()
+	inMemStorage := &storage.InMemoryStorage{}
+	server := webapp.Server{
+		Storage: inMemStorage,
+	}
 
-	// Global middleware
-	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
-	// By default gin.DefaultWriter = os.Stdout
-	r.Use(gin.Logger())
+	r := getConfiguredRouter()
+	r.Route("/v1", func(r chi.Router) {
+		r.Get("/health-check", server.HealthCheck)
+		r.Get("/", server.HomeIndex)
 
-	// Recovery middleware recovers from any panics and writes a 500 if there was one.
-	r.Use(gin.Recovery())
+		r.Get("/to-do", server.GetAllToDos)
+		r.Post("/to-do/{id}/toggle-complete", server.ToggleToDoComplete)
+		r.Post("/to-do/{id}/toggle-active", server.ToggleToDoActive)
+	})
 
-	// Add the cors headers if there is an Origin header.
-	r.Use(middleware.CORSMiddleware())
-
-	healthController := new(controllers.HealthController)
-	healthController.RegisterRoutes(r)
-
-	homeController := new(controllers.HomeController)
-	homeController.RegisterRoutes(r)
-
-	toDoController := new(controllers.ToDoController)
-	toDoController.RegisterRoutes(r)
-
-	err := r.Run(":9090")
-	// err := r.RunTLS(":4443", "keys/server.crt", "keys/server.key")
+	err := http.ListenAndServe(":9090", r)
+	// err := http.ListenAndServeTLS(":4443", "keys/server.crt", "keys/server.key", r)
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func getConfiguredRouter() *chi.Mux {
+	// Creates a router without any middleware by default
+	r := chi.NewRouter()
+
+	// A good base middleware stack
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	// Basic CORS
+	// for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing
+	corsMiddleware := cors.New(cors.Options{
+		// AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts
+		AllowedOrigins: []string{"*"},
+		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	})
+
+	r.Use(corsMiddleware.Handler)
+
+	// Set a timeout value on the request context (ctx), that will signal
+	// through ctx.Done() that the request has timed out and further
+	// processing should be stopped.
+	r.Use(middleware.Timeout(30 * time.Second))
+
+	return r
 }

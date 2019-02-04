@@ -18,10 +18,10 @@ dependencies:
 build: dependencies build-server
 
 build-server:
-	GIN_RELEASE=release go build -o ./bin/todone-server cmd/server/main.go
+	go build -o $(BIN_DIR)/todone-server cmd/server/main.go
 
 debug: dependencies
-	GIN_RELEASE=debug DEBUG=true reflex -c reflex.conf
+	reflex -c reflex.conf
 
 linux-binaries:
 	CGO_ENABLED=0 GOOS=linux go build -a -o $(BIN_DIR)/todone-server cmd/server/main.go
