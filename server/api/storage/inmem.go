@@ -4,14 +4,15 @@ import (
 	"errors"
 	"sync"
 	"time"
-	"todone-backend/webapp"
+	"todone-backend/api"
+	"todone-backend/api/todo"
 )
 
 type InMemoryStorage struct {
 	mtx sync.Mutex
 }
 
-var toDos = []*webapp.ToDo{
+var toDos = []*todo.Model{
 	{
 		ID:       "467f8e85-e125-4068-8280-a581a771ca2b",
 		Text:     "Do the dishes",
@@ -45,11 +46,11 @@ var toDos = []*webapp.ToDo{
 }
 
 // GetAll ...
-func (s InMemoryStorage) GetAllToDos() ([]*webapp.ToDo, error) {
+func (s InMemoryStorage) GetAllToDos() ([]*todo.Model, error) {
 	return toDos, nil
 }
 
-func (s InMemoryStorage) GetToDoById(ID string) (*webapp.ToDo, error) {
+func (s InMemoryStorage) GetToDoById(ID string) (*todo.Model, error) {
 	for i := range toDos {
 		if toDos[i].ID == ID {
 			return toDos[i], nil
@@ -67,7 +68,12 @@ func (s InMemoryStorage) ToggleToDoComplete(ID string) error {
 			s.mtx.Lock()
 			toDos[i].Complete = !toDos[i].Complete
 			if toDos[i].Complete == true {
-				toDos[i].Active = false
+				// If the current ToDo was active then we need to deactivate it and record it.
+				if toDos[i].Active == true {
+					curTime := time.Now()
+					toDos[i].TimeLog = append(toDos[i].TimeLog, todo.TimeLog{EndTime: api.JSONTime(curTime)})
+					toDos[i].Active = false
+				}
 			}
 			s.mtx.Unlock()
 
@@ -92,9 +98,9 @@ func (s InMemoryStorage) ToggleToDoActive(ID string) error {
 			s.mtx.Lock()
 			toDos[i].Active = !toDos[i].Active
 			if toDos[i].Active {
-				toDos[i].TimeLog = append(toDos[i].TimeLog, webapp.TimeLog{StartTime: curTime.String()})
+				toDos[i].TimeLog = append(toDos[i].TimeLog, todo.TimeLog{StartTime: api.JSONTime(curTime)})
 			} else {
-				toDos[i].TimeLog = append(toDos[i].TimeLog, webapp.TimeLog{EndTime: curTime.String()})
+				toDos[i].TimeLog = append(toDos[i].TimeLog, todo.TimeLog{EndTime: api.JSONTime(curTime)})
 			}
 			s.mtx.Unlock()
 
@@ -103,7 +109,7 @@ func (s InMemoryStorage) ToggleToDoActive(ID string) error {
 			// If this active was active then we need to record that it is no longer active.
 			if toDos[i].Active {
 				s.mtx.Lock()
-				toDos[i].TimeLog = append(toDos[i].TimeLog, webapp.TimeLog{EndTime: curTime.String()})
+				toDos[i].TimeLog = append(toDos[i].TimeLog, todo.TimeLog{EndTime: api.JSONTime(curTime)})
 				s.mtx.Unlock()
 			}
 			toDos[i].Active = false

@@ -1,7 +1,9 @@
-package webapp
+package todo
 
-// ToDo ...
-type ToDo struct {
+import "todone-backend/api"
+
+// Model ...
+type Model struct {
 	ID       string    `json:"id"`
 	Text     string    `json:"text"`
 	Complete bool      `json:"complete"`
@@ -11,6 +13,6 @@ type ToDo struct {
 
 // TimeLog ...
 type TimeLog struct {
-	StartTime string `json:"startTime"`
-	EndTime   string `json:"endTime"`
+	StartTime api.JSONTime `json:"startTime"`
+	EndTime   api.JSONTime `json:"endTime"`
 }

@@ -7,24 +7,19 @@ import (
 	"github.com/go-chi/cors"
 	"net/http"
 	"time"
-	"todone-backend/webapp"
-	"todone-backend/webapp/storage"
+	"todone-backend/api/page"
+	"todone-backend/api/storage"
+	"todone-backend/api/todo"
 )
 
 func main() {
 	inMemStorage := &storage.InMemoryStorage{}
-	server := webapp.Server{
-		Storage: inMemStorage,
-	}
+	toDoHandler := todo.NewHandler(inMemStorage)
 
 	r := getConfiguredRouter()
 	r.Route("/v1", func(r chi.Router) {
-		r.Get("/health-check", server.HealthCheck)
-		r.Get("/", server.HomeIndex)
-
-		r.Get("/to-do", server.GetAllToDos)
-		r.Post("/to-do/{id}/toggle-complete", server.ToggleToDoComplete)
-		r.Post("/to-do/{id}/toggle-active", server.ToggleToDoActive)
+		r.Mount("/", page.AddRoutes())
+		r.Mount("/to-do", toDoHandler.AddRoutes())
 	})
 
 	err := http.ListenAndServe(":9090", r)
